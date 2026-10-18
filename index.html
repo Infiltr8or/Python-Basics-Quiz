@@ -680,7 +680,6 @@
 
 <script>
 // 50 Questions directly mapped to freeCodeCamp Python Basics (v9)
-// All hints rewritten to be conceptual guideposts without direct code spoilers
 const QUESTIONS = [
   {
     topic: "Variables & Types",
@@ -1385,15 +1384,26 @@ const QUESTIONS = [
 ];
 
 // App State
+let activeDrills = [];
 let currentIndex = 0;
 let highestUnlockedIndex = 0;
-let userAnswers = new Array(QUESTIONS.length).fill(null);
+let userAnswers = [];
 let streak = 0;
 let bestStreak = 0;
 let totalAttempts = 0;
 let drillPassed = false;
 let awaitingSecondEnter = false;
 let drillFailures = 0;
+
+// Fisher-Yates array shuffle for true randomization
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 function normalizeLine(str) {
   if (!str) return "";
@@ -1405,6 +1415,10 @@ function normalizeLine(str) {
 }
 
 function initTrainer() {
+  // Randomize question sequence on launch
+  activeDrills = shuffleArray(QUESTIONS);
+  userAnswers = new Array(activeDrills.length).fill(null);
+
   renderGridNav();
   loadDrill(0);
 
@@ -1422,6 +1436,8 @@ function initTrainer() {
   document.getElementById("btn-toggle-grid").addEventListener("click", toggleGridNav);
 
   document.getElementById("btn-restart").addEventListener("click", () => {
+    // Re-shuffle order on full reset
+    activeDrills = shuffleArray(QUESTIONS);
     currentIndex = 0;
     highestUnlockedIndex = 0;
     streak = 0;
@@ -1429,7 +1445,7 @@ function initTrainer() {
     drillPassed = false;
     awaitingSecondEnter = false;
     drillFailures = 0;
-    userAnswers = new Array(QUESTIONS.length).fill(null);
+    userAnswers = new Array(activeDrills.length).fill(null);
     document.getElementById("completion-panel").style.display = "none";
     document.getElementById("quiz-card").style.display = "flex";
     renderGridNav();
@@ -1441,7 +1457,7 @@ function renderGridNav() {
   const container = document.getElementById("grid-modal");
   container.innerHTML = "";
 
-  QUESTIONS.forEach((q, idx) => {
+  activeDrills.forEach((q, idx) => {
     const cell = document.createElement("div");
     cell.id = `grid-cell-${idx}`;
     cell.innerText = (idx + 1).toString().padStart(2, "0");
@@ -1514,7 +1530,7 @@ function toggleHints() {
 }
 
 function updateHUD() {
-  const total = QUESTIONS.length;
+  const total = activeDrills.length;
   document.getElementById("stat-drill-num").innerText = `${(currentIndex + 1).toString().padStart(2, "0")}/${total}`;
 
   const passedCount = userAnswers.filter(a => a && a.passed).length;
@@ -1530,7 +1546,7 @@ function updateHUD() {
 
 function loadDrill(index) {
   currentIndex = index;
-  const q = QUESTIONS[currentIndex];
+  const q = activeDrills[currentIndex];
   awaitingSecondEnter = false;
   drillFailures = 0;
 
@@ -1548,7 +1564,7 @@ function loadDrill(index) {
   document.getElementById("completion-panel").style.display = "none";
 
   document.getElementById("drill-topic").innerText = q.topic;
-  document.getElementById("drill-counter-label").innerText = `DRILL ${(currentIndex + 1).toString().padStart(2, "0")} OF ${QUESTIONS.length}`;
+  document.getElementById("drill-counter-label").innerText = `DRILL ${(currentIndex + 1).toString().padStart(2, "0")} OF ${activeDrills.length}`;
   document.getElementById("drill-prompt").innerText = q.prompt;
 
   const bufferContainer = document.getElementById("buffer-lines");
@@ -1646,7 +1662,7 @@ function handleExecution() {
   const rawInput = inputEl.value;
   if (!rawInput.trim()) return;
 
-  const q = QUESTIONS[currentIndex];
+  const q = activeDrills[currentIndex];
   totalAttempts++;
 
   const userNorm = normalizeLine(rawInput);
@@ -1733,7 +1749,7 @@ function advanceDrill() {
     return;
   }
 
-  if (currentIndex < QUESTIONS.length - 1) {
+  if (currentIndex < activeDrills.length - 1) {
     loadDrill(currentIndex + 1);
   } else {
     showCompletion();
@@ -1750,7 +1766,7 @@ function showCompletion() {
   document.getElementById("quiz-card").style.display = "none";
   document.getElementById("completion-panel").style.display = "flex";
 
-  const total = QUESTIONS.length;
+  const total = activeDrills.length;
   const passed = userAnswers.filter(a => a && a.passed).length;
   const accuracy = Math.round((passed / Math.max(totalAttempts, total)) * 100);
 
