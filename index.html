@@ -379,6 +379,44 @@
       margin-bottom: 2px;
     }
 
+    /* Show Answer Drawer (Unlocks after 2 failed attempts) */
+    .answer-reveal-box {
+      border: 1px dashed var(--term-amber);
+      background: rgba(255, 176, 0, 0.05);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .answer-reveal-btn {
+      background: transparent;
+      border: 1px solid var(--term-amber);
+      color: var(--term-amber);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: all 0.15s ease;
+    }
+
+    .answer-reveal-btn:hover {
+      background: rgba(255, 176, 0, 0.15);
+      box-shadow: 0 0 8px rgba(255, 176, 0, 0.3);
+    }
+
+    .answer-reveal-content {
+      display: none;
+      font-size: 0.8rem;
+      color: #ffd280;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(255, 176, 0, 0.3);
+    }
+
     /* Output Console (Beginner-Friendly Diagnostics) */
     .console-box {
       background: #020603;
@@ -594,6 +632,15 @@
       </ul>
     </div>
 
+    <!-- Show Answer Drawer (Appears after 2 failed attempts) -->
+    <div class="answer-reveal-box" id="answer-box" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.74rem; color: var(--term-amber); font-weight: 600;">⚠️ RECONSTRUCTION ASSIST UNLOCKED</span>
+        <button class="answer-reveal-btn" id="btn-reveal-answer">[ REVEAL TARGET SYNTAX ]</button>
+      </div>
+      <div class="answer-reveal-content" id="answer-content"></div>
+    </div>
+
     <!-- Program Output & Diagnostics Console -->
     <div class="console-box">
       <div class="console-header">> PROGRAM OUTPUT &amp; DIAGNOSTICS</div>
@@ -632,6 +679,8 @@
 </div>
 
 <script>
+// 50 Questions directly mapped to freeCodeCamp Python Basics (v9)
+// All hints rewritten to be conceptual guideposts without direct code spoilers
 const QUESTIONS = [
   {
     topic: "Variables & Types",
@@ -1335,6 +1384,7 @@ const QUESTIONS = [
   }
 ];
 
+// App State
 let currentIndex = 0;
 let highestUnlockedIndex = 0;
 let userAnswers = new Array(QUESTIONS.length).fill(null);
@@ -1342,7 +1392,8 @@ let streak = 0;
 let bestStreak = 0;
 let totalAttempts = 0;
 let drillPassed = false;
-let awaitingSecondEnter = false; // Two-stage Enter progression flag
+let awaitingSecondEnter = false;
+let drillFailures = 0;
 
 function normalizeLine(str) {
   if (!str) return "";
@@ -1377,6 +1428,7 @@ function initTrainer() {
     totalAttempts = 0;
     drillPassed = false;
     awaitingSecondEnter = false;
+    drillFailures = 0;
     userAnswers = new Array(QUESTIONS.length).fill(null);
     document.getElementById("completion-panel").style.display = "none";
     document.getElementById("quiz-card").style.display = "flex";
@@ -1480,6 +1532,17 @@ function loadDrill(index) {
   currentIndex = index;
   const q = QUESTIONS[currentIndex];
   awaitingSecondEnter = false;
+  drillFailures = 0;
+
+  const answerBox = document.getElementById("answer-box");
+  const answerContent = document.getElementById("answer-content");
+  const btnReveal = document.getElementById("btn-reveal-answer");
+  if (answerBox) answerBox.style.display = "none";
+  if (answerContent) {
+    answerContent.style.display = "none";
+    answerContent.innerHTML = "";
+  }
+  if (btnReveal) btnReveal.innerText = "[ REVEAL TARGET SYNTAX ]";
 
   document.getElementById("quiz-card").style.display = "flex";
   document.getElementById("completion-panel").style.display = "none";
@@ -1546,7 +1609,7 @@ function loadDrill(index) {
     consoleEl.className = "console-content success";
     consoleEl.innerHTML = `
       <strong>[EXECUTION SUCCESS - EXIT CODE 0]</strong><br>
-      <div style="margin: 4px 0; color: var(--term-accent-cyan);"><strong>&gt;&gt;&gt; RUNTIME OUTPUT:</strong><br><pre style="display:inline-block; margin:2px 0; color:var(--term-bright-green);">${escapeHtml(q.expected_output || "OK")}</pre></div>
+      <div style="margin: 4px 0; color: var(--term-accent-cyan);"><strong>&gt;&gt;&gt; RUNTIME OUTPUT:</strong><br><pre style="display:inline-block; margin:2px 0; color:var(--term-bright-green); font-weight:bold;">${escapeHtml(q.expected_output || "OK")}</pre></div>
       <div style="margin-top: 4px; color: var(--term-dim-green);">${escapeHtml(q.rationale)}</div>
     `;
   } else {
@@ -1557,7 +1620,6 @@ function loadDrill(index) {
     inputEl.focus();
   }
 
-  // Keydown event: 1st Enter verifies, 2nd Enter advances
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       if (awaitingSecondEnter) {
@@ -1626,6 +1688,28 @@ function handleExecution() {
     awaitingSecondEnter = false;
     btnNext.disabled = true;
     btnExec.innerText = "[ EXECUTE ]";
+    drillFailures++;
+
+    if (drillFailures >= 2) {
+      const answerBox = document.getElementById("answer-box");
+      const answerContent = document.getElementById("answer-content");
+      const btnReveal = document.getElementById("btn-reveal-answer");
+
+      if (answerBox) answerBox.style.display = "flex";
+
+      if (btnReveal) {
+        btnReveal.onclick = () => {
+          if (answerContent.style.display === "none" || !answerContent.style.display) {
+            answerContent.style.display = "block";
+            answerContent.innerHTML = `<strong>Required Line:</strong> <span class="target-preview">${escapeHtml(q.target)}</span>`;
+            btnReveal.innerText = "[ HIDE TARGET SYNTAX ]";
+          } else {
+            answerContent.style.display = "none";
+            btnReveal.innerText = "[ REVEAL TARGET SYNTAX ]";
+          }
+        };
+      }
+    }
 
     consoleEl.className = "console-content error";
     consoleEl.innerHTML = `
