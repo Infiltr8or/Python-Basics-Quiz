@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>freeCodeCamp Python v9 Basics Drill</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre, .code-font { font-family: 'Fira Code', monospace; }
+    .blank-highlight {
+      background: rgba(99, 102, 241, 0.25);
+      border-bottom: 2px solid #818cf8;
+      padding: 0 4px;
+      border-radius: 2px;
+      color: #e0e7ff;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-3 sm:p-6 lg:p-8">
+
+  <div class="w-full max-w-4xl flex flex-col gap-4">
+    <!-- Top Header & FCC Badge -->
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            freeCodeCamp v9 Curriculum
+          </span>
+          <span class="text-xs text-slate-400 font-medium" id="module-tag">Module: Python Basics</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">Python Basics Syntax Muscle Memory</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Strictly aligned with Variables, Strings, Math, Conditionals, Functions & Cipher workshops</p>
+      </div>
+
+      <!-- Live Stats Counters -->
+      <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium self-stretch sm:self-auto justify-between sm:justify-start">
+        <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <span class="text-slate-400">Streak:</span>
+          <span id="streak-counter" class="text-amber-400 font-bold">0</span> 🔥
+        </div>
+        <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <span class="text-slate-400">Score:</span>
+          <span id="score-counter" class="text-indigo-400 font-bold">0/50</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <span class="text-slate-400">Accuracy:</span>
+          <span id="accuracy-counter" class="text-emerald-400 font-bold">100%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Overall Progress Bar -->
+    <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+      <div id="progress-bar" class="bg-indigo-500 h-full transition-all duration-300 w-0"></div>
+    </div>
+
+    <!-- Review Banner (Appears when drilling missed questions) -->
+    <div id="review-banner" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-2.5 rounded-lg text-xs flex justify-between items-center">
+      <span><strong>Review Mode:</strong> Drilling previously missed questions for complete mastery.</span>
+      <button id="exit-review-btn" class="underline font-semibold hover:text-white">Exit to Full 50</button>
+    </div>
+
+    <!-- Quick Question Navigator Tray -->
+    <div class="bg-slate-900/60 border border-slate-800/80 rounded-lg p-3">
+      <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <span class="font-medium">Question Navigator</span>
+        <span class="text-[11px] text-slate-500">Jump to any question</span>
+      </div>
+      <div id="question-nav-grid" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Main Question Card -->
+    <main id="quiz-container" class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-7 shadow-xl flex flex-col gap-4">
+      <!-- Question Metadata -->
+      <div class="flex items-center justify-between border-b border-slate-800/60 pb-3">
+        <div class="flex items-center gap-2">
+          <span id="question-number" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-400">
+            Question 1 of 50
+          </span>
+          <span class="text-slate-600">&bull;</span>
+          <span id="question-topic" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+            Variables & Data Types
+          </span>
+        </div>
+        <button id="hint-toggle-btn" class="text-xs text-slate-400 hover:text-slate-200 underline decoration-dotted transition-colors">
+          Show Hint
+        </button>
+      </div>
+
+      <!-- Problem Scenario -->
+      <p id="prompt-text" class="text-sm sm:text-base text-slate-200 leading-relaxed font-medium">
+        Prompt goes here.
+      </p>
+
+      <!-- Code Snippet Display with styled blank -->
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-4 sm:p-5 text-sm sm:text-base code-font leading-relaxed overflow-x-auto text-slate-300 relative shadow-inner">
+        <pre id="code-snippet" class="whitespace-pre font-mono"></pre>
+      </div>
+
+      <!-- Multiple Choice Reference Panel -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <span>Candidate Options (Type the exact token to answer):</span>
+        </div>
+        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Hint Box -->
+      <div id="hint-box" class="hidden text-xs bg-slate-950 border border-amber-500/30 text-amber-300 p-3 rounded-lg leading-relaxed">
+        <span class="font-bold text-amber-400">FCC Hint:</span> <span id="hint-text"></span>
+      </div>
+
+      <!-- Input Form -->
+      <form id="quiz-form" class="flex flex-col sm:flex-row gap-3 pt-1">
+        <div class="relative flex-grow">
+          <input
+            id="code-input"
+            type="text"
+            autocapitalize="none"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Type missing syntax / token here..."
+            class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg px-4 py-3 code-font text-white placeholder-slate-500 outline-none transition-all text-sm sm:text-base"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          id="submit-btn"
+          class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shrink-0"
+        >
+          <span>Submit</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <!-- Feedback Banner -->
+      <div id="feedback-box" class="hidden p-4 rounded-lg text-sm border flex flex-col gap-2">
+        <div id="feedback-status" class="font-bold flex items-center gap-2 text-sm sm:text-base"></div>
+        <div id="feedback-detail" class="text-slate-300 text-xs sm:text-sm leading-relaxed"></div>
+        <button id="next-btn" class="mt-2 self-end bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded transition-colors flex items-center gap-1.5">
+          <span>Next Question</span>
+          <kbd class="bg-slate-900 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300">Enter</kbd>
+        </button>
+      </div>
+    </main>
+
+    <!-- Completion Results Screen -->
+    <div id="results-screen" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-10 text-center flex flex-col items-center gap-5">
+      <div id="rank-icon" class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center text-3xl font-bold border border-indigo-500/20">
+        🏆
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-white" id="completion-heading">Drill Completed!</h2>
+        <p id="rank-badge" class="text-xs font-semibold uppercase tracking-wider text-indigo-400 mt-1">Python Basics Certified</p>
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-5 max-w-md w-full text-left flex flex-col gap-3 text-sm">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <span class="text-slate-400">Total Questions:</span>
+          <span id="final-total" class="font-bold text-white font-mono">50</span>
+        </div>
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <span class="text-slate-400">Correct on First Try:</span>
+          <span id="final-score" class="font-bold text-emerald-400 font-mono">0</span>
+        </div>
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <span class="text-slate-400">Accuracy Rate:</span>
+          <span id="final-accuracy" class="font-bold text-indigo-400 font-mono">0%</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Questions Flagged for Review:</span>
+          <span id="final-missed-count" class="font-bold text-amber-400 font-mono">0</span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
+        <button id="review-missed-btn" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm flex items-center gap-2">
+          <span>Drill Missed Questions</span>
+          <span id="missed-pill" class="bg-amber-800/80 px-2 py-0.5 rounded text-xs">0</span>
+        </button>
+        <button id="retry-all-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
+          Restart All 50 (Fresh Shuffle)
+        </button>
+      </div>
+    </div>
+
+    <!-- Curriculum Mapping Footer -->
+    <footer class="text-center text-xs text-slate-500 leading-relaxed border-t border-slate-900 pt-4">
+      freeCodeCamp Python v9 Curriculum Scope: Report Card Printer &bull; Employee Profile Generator &bull; Bill Splitter &bull; Movie Ticket Calculator &bull; Kitchen Inventory Tracker &bull; Caesar Cipher Workshop
+    </footer>
+  </div>
+
+  <script>
+    // 50 Questions STRICTLY mapping to freeCodeCamp Python v9 "Python Basics"
+    const fccPythonBasicsQuestionBank = [
+      // Section 1: Variables & Data Types (Report Card Printer)
+      {
+        id: 1,
+        topic: "Variables & Data Types",
+        prompt: "In the Report Card Printer workshop, check the runtime data type of the student's grade average:",
+        code: `grade_avg = 94.5\nprint(___(grade_avg))  # <class 'float'>`,
+        options: ["type", "typeof", "isinstance", "datatype"],
+        accepted: ["type"],
+        hint: "Python uses a 4-letter built-in function to inspect the type class of any object.",
+        rationale: "freeCodeCamp Lesson 1: The built-in `type()` function returns the data type class of a variable (e.g. `type(94.5)` yields `<class 'float'>`)."
+      },
+      {
+        id: 2,
+        topic: "Variables & Data Types",
+        prompt: "Verify whether the student's ID number is strictly an instance of the integer class:",
+        code: `student_id = 1042\nis_valid = ___(student_id, int)`,
+        options: ["isinstance", "type", "has_type", "isa"],
+        accepted: ["isinstance"],
+        hint: "Takes two arguments: the object and the target type class.",
+        rationale: "freeCodeCamp Lesson 1: `isinstance(object, classinfo)` returns True if the object is an instance of the specified class."
+      },
+      {
+        id: 3,
+        topic: "Variables & Data Types",
+        prompt: "Convert the numerical string from the student record into an integer for calculation:",
+        code: `score_text = "95"\nscore_num = ___(score_text)`,
+        options: ["int", "to_int", "parse_int", "number"],
+        accepted: ["int"],
+        hint: "The standard built-in type constructor for whole numbers.",
+        rationale: "freeCodeCamp Lesson 1: `int()` converts compatible string or float representations into an integer."
+      },
+      {
+        id: 4,
+        topic: "Variables & Data Types",
+        prompt: "Convert an integer into a float to record high-precision test results:",
+        code: `raw_score = 80\nprecise_score = ___(raw_score)  # 80.0`,
+        options: ["float", "double", "decimal", "to_float"],
+        accepted: ["float"],
+        hint: "Python's primitive floating-point constructor.",
+        rationale: "freeCodeCamp Lesson 1: `float()` converts integers and numeric strings into 64-bit floating-point numbers."
+      },
+      {
+        id: 5,
+        topic: "Variables & Comments",
+        prompt: "Provide the standard single-line comment character in Python:",
+        code: `___ Record Card Printer initialized\nstudent_name = "Maya"`,
+        options: ["#", "//", "/*", "--"],
+        accepted: ["#"],
+        hint: "Python uses the hash / pound symbol for comments, not double slashes.",
+        rationale: "freeCodeCamp Lesson 1: In Python, comments begin with the `#` character and extend to the end of the line."
+      },
+
+      // Section 2: Printing & Formatting
+      {
+        id: 6,
+        topic: "Printing Basics",
+        prompt: "Customize the separator character between multiple printed items to display a colon:",
+        code: `print("Grade", "A+", ___=" : ")  # Grade : A+`,
+        options: ["sep", "separator", "split", "end"],
+        accepted: ["sep"],
+        hint: "Keyword argument in print() controlling what appears between arguments (defaults to a space).",
+        rationale: "freeCodeCamp Printing: `sep` specifies the separator string between multiple arguments in `print()`."
+      },
+      {
+        id: 7,
+        topic: "Printing Basics",
+        prompt: "Prevent `print()` from automatically outputting a newline at the end:",
+        code: `print("Loading", ___="")\nprint("...")`,
+        options: ["end", "sep", "trail", "newline"],
+        accepted: ["end"],
+        hint: "Keyword parameter in print() specifying what to append at the end (defaults to '\\n').",
+        rationale: "freeCodeCamp Printing: The `end` parameter defines the final character printed (defaults to newline `\\n`)."
+      },
+
+      // Section 3: Strings & Methods (Employee Profile Generator)
+      {
+        id: 8,
+        topic: "Introduction to Strings",
+        prompt: "Use an escape character to properly include a single quote inside a single-quoted string:",
+        code: `quote = 'It___'s a great day to code.'`,
+        options: ["\\", "/", "\\\\", "`"],
+        accepted: ["\\"],
+        hint: "The backslash character prevents Python from prematurely terminating the string.",
+        rationale: "freeCodeCamp String Basics: The backslash `\\` escapes special characters such as `'` inside single-quoted strings."
+      },
+      {
+        id: 9,
+        topic: "Introduction to Strings",
+        prompt: "Insert a newline escape sequence to move the department name to the next line:",
+        code: `profile = "Maya Lin___Engineering"`,
+        options: ["\\n", "\\t", "\\r", "/n"],
+        accepted: ["\\n"],
+        hint: "The standard escape sequence for line feed / new line.",
+        rationale: "freeCodeCamp String Basics: `\\n` represents an ASCII linefeed (newline)."
+      },
+      {
+        id: 10,
+        topic: "Introduction to Strings",
+        prompt: "Determine the total count of characters in an employee's username:",
+        code: `username = "dev_jordan"\nchar_count = ___(username)`,
+        options: ["len", "length", "size", "count"],
+        accepted: ["len"],
+        hint: "Python uses a short 3-letter built-in function, not a .length property.",
+        rationale: "freeCodeCamp String Basics: `len()` returns the number of items or characters in a sequence."
+      },
+      {
+        id: 11,
+        topic: "Strings & Methods",
+        prompt: "Standardize an employee email address to all lowercase letters:",
+        code: `raw_email = "Alex.Carter@Company.COM"\nclean_email = raw_email.___()`,
+        options: ["lower", "toLowerCase", "casefold_all", "downcase"],
+        accepted: ["lower"],
+        hint: "Python string methods are lowercase and snake_case, unlike JavaScript's toLowerCase.",
+        rationale: "freeCodeCamp Employee Profile: `.lower()` returns a copy of the string converted to lowercase."
+      },
+      {
+        id: 12,
+        topic: "Strings & Methods",
+        prompt: "Convert a project status banner to all uppercase characters:",
+        code: `status = "urgent"\nbanner = status.___()`,
+        options: ["upper", "toUpperCase", "caps", "capitalize"],
+        accepted: ["upper"],
+        hint: "Python's built-in string method for uppercase.",
+        rationale: "freeCodeCamp Employee Profile: `.upper()` returns a copy with all characters converted to uppercase."
+      },
+      {
+        id: 13,
+        topic: "Strings & Methods",
+        prompt: "Remove leading and trailing whitespace from the employee title input:",
+        code: `title = "   Lead Engineer   "\nclean_title = title.___()`,
+        options: ["strip", "trim", "clean", "rstrip"],
+        accepted: ["strip"],
+        hint: "Python uses strip() rather than trim().",
+        rationale: "freeCodeCamp Employee Profile: `.strip()` removes whitespace from both leading and trailing ends."
+      },
+      {
+        id: 14,
+        topic: "Strings & Methods",
+        prompt: "Replace underscores in an employee ID with hyphens:",
+        code: `badge = "EMP_2026_01"\nupdated = badge.___("_", "-")`,
+        options: ["replace", "replaceAll", "swap", "substitute"],
+        accepted: ["replace"],
+        hint: "Takes two arguments: the substring to search for and the replacement substring.",
+        rationale: "freeCodeCamp Employee Profile: `.replace(old, new)` returns a copy with all occurrences replaced."
+      },
+      {
+        id: 15,
+        topic: "Strings & Methods",
+        prompt: "Find the starting index of the character '@' inside the email:",
+        code: `email = "sam@company.org"\nat_index = email.___("@")`,
+        options: ["find", "indexOf", "search", "lookup"],
+        accepted: ["find"],
+        hint: "Returns the lowest index of the substring, or -1 if not found.",
+        rationale: "freeCodeCamp Employee Profile: `str.find(sub)` returns the lowest index where the substring is found, or -1."
+      },
+      {
+        id: 16,
+        topic: "Strings & Slicing",
+        prompt: "Access the very first character of the employee's first name:",
+        code: `first_name = "Sophia"\ninitial = first_name[___]`,
+        options: ["0", "1", "-0", "first"],
+        accepted: ["0"],
+        hint: "Python indexing is strictly zero-based.",
+        rationale: "freeCodeCamp String Basics: Sequence indexing starts at 0 for the first element."
+      },
+      {
+        id: 17,
+        topic: "Strings & Slicing",
+        prompt: "Access the last character of any string using negative indexing:",
+        code: `badge = "ID-9082A"\ncheck_digit = badge[___]`,
+        options: ["-1", "0", "1", "last"],
+        accepted: ["-1"],
+        hint: "Negative 1 indexes the final element.",
+        rationale: "freeCodeCamp String Basics: Negative indices count backward from the end; `-1` is the last item."
+      },
+      {
+        id: 18,
+        topic: "Strings & Slicing",
+        prompt: "Slice the first 4 characters of the department code (indices 0 up to, but not including, 4):",
+        code: `dept = "ENGINEERING"\nprefix = dept[0:___]`,
+        options: ["4", "3", "5", "4:"],
+        accepted: ["4"],
+        hint: "The stop index in [start:stop] is non-inclusive.",
+        rationale: "freeCodeCamp String Slicing: `[0:4]` extracts elements at index 0, 1, 2, and 3."
+      },
+      {
+        id: 19,
+        topic: "Strings & Slicing",
+        prompt: "Reverse a word using extended slice syntax with a negative step:",
+        code: `secret = "CIPHER"\nreversed_secret = secret[___]`,
+        options: ["::-1", "-1::-1", "::-", ":-1:"],
+        accepted: ["::-1"],
+        hint: "Omitted start and stop with step = -1.",
+        rationale: "freeCodeCamp String Slicing: `[::-1]` traverses the entire string backward."
+      },
+      {
+        id: 20,
+        topic: "Strings & f-strings",
+        prompt: "Provide the prefix to interpolate the employee's role into the template:",
+        code: `role = "Staff Architect"\nmsg = ___"Assigned role: {role}"`,
+        options: ["f", "format", "r", "str"],
+        accepted: ["f", "F"],
+        hint: "A single letter placed immediately before the opening quotation mark.",
+        rationale: "freeCodeCamp Employee Profile: The `f` prefix creates a formatted string literal that evaluates expressions inside `{}`."
+      },
+      {
+        id: 21,
+        topic: "Strings & Concatenation",
+        prompt: "Repeat the divider character 20 times using the string repetition operator:",
+        code: `divider = "-" ___ 20  # --------------------`,
+        options: ["*", "**", "+", "x"],
+        accepted: ["*"],
+        hint: "The multiplication operator works on strings as a repetition operator.",
+        rationale: "freeCodeCamp String Basics: In Python, `str * int` repeats the string that many times."
+      },
+
+      // Section 4: Numbers & Math Operations (Bill Splitter)
+      {
+        id: 22,
+        topic: "Numbers & Math",
+        prompt: "In the Bill Splitter workshop, perform floor division to find equal whole dollar shares:",
+        code: `total = 53\npeople = 4\nshare = total ___ people  # share is 13`,
+        options: ["//", "/", "%", "div"],
+        accepted: ["//"],
+        hint: "Double slashes discard the fractional remainder and round down.",
+        rationale: "freeCodeCamp Bill Splitter: The `//` operator performs floor division, rounding down to the nearest whole integer."
+      },
+      {
+        id: 23,
+        topic: "Numbers & Math",
+        prompt: "Calculate the remaining cents after splitting whole dollars using the modulus operator:",
+        code: `cents = 53\nremainder = cents ___ 4  # remainder is 1`,
+        options: ["%", "//", "/", "mod"],
+        accepted: ["%"],
+        hint: "The percent sign computes the remainder of division.",
+        rationale: "freeCodeCamp Bill Splitter: The `%` (modulus) operator yields the remainder from division."
+      },
+      {
+        id: 24,
+        topic: "Numbers & Math",
+        prompt: "Raise the base number 10 to the power of 3 using Python's exponentiation operator:",
+        code: `thousand = 10 ___ 3`,
+        options: ["**", "^", "^^", "pow"],
+        accepted: ["**"],
+        hint: "Double asterisks denote power in Python; ^ is bitwise XOR.",
+        rationale: "freeCodeCamp Bill Splitter: `**` is the exponentiation operator (e.g. `10 ** 3 == 1000`)."
+      },
+      {
+        id: 25,
+        topic: "Numbers & Math",
+        prompt: "Round the split total to 2 decimal places for financial formatting:",
+        code: `amount = 26.66666\nformatted = ___(amount, 2)  # 26.67`,
+        options: ["round", "floor", "ceil", "fixed"],
+        accepted: ["round"],
+        hint: "Built-in function taking a number and desired decimal places.",
+        rationale: "freeCodeCamp Bill Splitter: `round(number, ndigits)` rounds a number to a given precision in decimal digits."
+      },
+      {
+        id: 26,
+        topic: "Numbers & Math",
+        prompt: "Add a $5 tip to the bill total using an augmented assignment operator:",
+        code: `bill = 45\nbill ___ 5  # bill is now 50`,
+        options: ["+=", "=+", "++", "add"],
+        accepted: ["+="],
+        hint: "Combines addition and assignment in one step; Python does not have ++.",
+        rationale: "freeCodeCamp Bill Splitter: `+=` is the augmented addition operator. Python has no `++` operator."
+      },
+
+      // Section 5: Booleans & Conditionals (Movie Ticket & Weather Planner)
+      {
+        id: 27,
+        topic: "Booleans & Conditionals",
+        prompt: "Check whether a customer's age is greater than or equal to 18 for a movie rating:",
+        code: `age = 18\nis_adult = age ___ 18`,
+        options: [">=", "=>", ">", "=="],
+        accepted: [">="],
+        hint: "The greater-than sign comes before the equals sign.",
+        rationale: "freeCodeCamp Movie Ticket Calculator: `>=` tests if the left operand is greater than or equal to the right."
+      },
+      {
+        id: 28,
+        topic: "Booleans & Conditionals",
+        prompt: "Verify if two variables do NOT equal each other:",
+        code: `promo_code = "SUMMER"\nif promo_code ___ "EXPIRED":\n    apply_discount()`,
+        options: ["!=", "!==", "<>", "not =="],
+        accepted: ["!="],
+        hint: "Exclamation point followed directly by an equals sign.",
+        rationale: "freeCodeCamp Movie Ticket Calculator: `!=` tests inequality in Python."
+      },
+      {
+        id: 29,
+        topic: "Booleans & Conditionals",
+        prompt: "Combine conditions so the ticket discount applies ONLY if both age < 12 AND day is 'Tuesday':",
+        code: `if age < 12 ___ day == "Tuesday":\n    ticket_price = 5.0`,
+        options: ["and", "&&", "both", "&"],
+        accepted: ["and"],
+        hint: "Python uses the English word, not &&.",
+        rationale: "freeCodeCamp Movie Ticket Calculator: `and` requires both conditions to be True."
+      },
+      {
+        id: 30,
+        topic: "Booleans & Conditionals",
+        prompt: "Grant access if the user has a member pass OR is an invited guest:",
+        code: `if is_member ___ is_guest:\n    grant_entry()`,
+        options: ["or", "||", "any", "|"],
+        accepted: ["or"],
+        hint: "Python uses the English word, not double pipes ||.",
+        rationale: "freeCodeCamp Travel Weather Planner: `or` evaluates to True if at least one condition is True."
+      },
+      {
+        id: 31,
+        topic: "Booleans & Conditionals",
+        prompt: "Invert a boolean condition so it executes when `is_raining` is False:",
+        code: `is_raining = False\nif ___ is_raining:\n    go_hiking()`,
+        options: ["not", "!", "false", "invert"],
+        accepted: ["not"],
+        hint: "Python uses the word 'not' rather than an exclamation mark '!' for logical negation.",
+        rationale: "freeCodeCamp Travel Weather Planner: `not` is Python's logical negation operator."
+      },
+      {
+        id: 32,
+        topic: "Booleans & Conditionals",
+        prompt: "Provide the keyword for the secondary branch of a multi-way conditional:",
+        code: `if temp > 85:\n    print("Hot")\n___ temp > 65:\n    print("Mild")\nelse:\n    print("Cold")`,
+        options: ["elif", "else if", "elseif", "case"],
+        accepted: ["elif"],
+        hint: "Python contracts 'else if' into a 4-letter keyword.",
+        rationale: "freeCodeCamp Travel Weather Planner: `elif` (short for else if) tests an alternate condition when the prior `if` fails."
+      },
+      {
+        id: 33,
+        topic: "Booleans & Conditionals",
+        prompt: "Provide the final fallback branch keyword when all previous conditions evaluate to False:",
+        code: `if score >= 90:\n    grade = "A"\n___:\n    grade = "Review Needed"`,
+        options: ["else", "default", "otherwise", "elif"],
+        accepted: ["else"],
+        hint: "The closing branch that executes when all previous conditions fail.",
+        rationale: "freeCodeCamp Movie Ticket Calculator: `else` executes when none of the preceding `if` or `elif` expressions are truthy."
+      },
+
+      // Section 6: Functions & Scope (Kitchen Inventory Tracker & Apply Discount)
+      {
+        id: 34,
+        topic: "Functions & Scope",
+        prompt: "In the Kitchen Inventory Tracker, declare a function named `add_ingredient`:",
+        code: `___ add_ingredient(item, qty):\n    inventory[item] = qty`,
+        options: ["def", "function", "fn", "func"],
+        accepted: ["def"],
+        hint: "3-letter keyword used to define a function.",
+        rationale: "freeCodeCamp Kitchen Inventory: `def` (short for define) introduces a function definition."
+      },
+      {
+        id: 35,
+        topic: "Functions & Scope",
+        prompt: "Send the computed discounted price back to the function caller:",
+        code: `def apply_discount(price, rate):\n    ___ price - (price * rate)`,
+        options: ["return", "yield", "output", "send"],
+        accepted: ["return"],
+        hint: "Exits the function and passes a result value back to the call site.",
+        rationale: "freeCodeCamp Apply Discount Function: `return` exits the function and hands the specified value back to the caller."
+      },
+      {
+        id: 36,
+        topic: "Functions & Scope",
+        prompt: "Assign a default fallback value of 10% (0.10) to the `rate` parameter:",
+        code: `def apply_discount(price, rate___0.10):\n    return price * (1 - rate)`,
+        options: ["=", "==", ":", "->"],
+        accepted: ["="],
+        hint: "Default parameters use a single equals sign in the parameter signature.",
+        rationale: "freeCodeCamp Functions & Scope: Default parameter values are declared in the function signature using `=`."
+      },
+      {
+        id: 37,
+        topic: "Functions & Scope",
+        prompt: "Declare that a variable inside a function refers to the global scope variable, allowing it to be modified:",
+        code: `inventory_count = 50\ndef update_stock(val):\n    ___ inventory_count\n    inventory_count += val`,
+        options: ["global", "nonlocal", "outer", "public"],
+        accepted: ["global"],
+        hint: "Keyword required inside a function when rebinding a variable defined outside in module scope.",
+        rationale: "freeCodeCamp Functions & Scope: The `global` keyword allows you to modify a variable defined outside the current function scope."
+      },
+      {
+        id: 38,
+        topic: "Functions & Scope",
+        prompt: "What special singleton value is returned by default when a function body lacks a `return` statement?",
+        code: `def log_entry():\n    print("Entry recorded")\nresult = log_entry()  # result is ___`,
+        options: ["None", "null", "undefined", "void"],
+        accepted: ["None"],
+        hint: "Python's built-in absence-of-value singleton (capitalized).",
+        rationale: "freeCodeCamp Functions: In Python, functions without an explicit return statement implicitly return `None`."
+      },
+
+      // Section 7: Caesar Cipher Workshop & String Iteration
+      {
+        id: 39,
+        topic: "Caesar Cipher Workshop",
+        prompt: "In the Caesar Cipher workshop, obtain the integer Unicode/ASCII code point of a character:",
+        code: `char = 'A'\ncode_point = ___(char)  # 65`,
+        options: ["ord", "chr", "ascii", "code"],
+        accepted: ["ord"],
+        hint: "Short for ordinal; returns the integer ordinal of a 1-character string.",
+        rationale: "freeCodeCamp Caesar Cipher: `ord(c)` returns an integer representing the Unicode code point of the character."
+      },
+      {
+        id: 40,
+        topic: "Caesar Cipher Workshop",
+        prompt: "Convert an integer Unicode/ASCII code point back into its corresponding 1-character string:",
+        code: `code = 65\nletter = ___(code)  # 'A'`,
+        options: ["chr", "ord", "char", "str"],
+        accepted: ["chr"],
+        hint: "Short for character; inverse of ord().",
+        rationale: "freeCodeCamp Caesar Cipher: `chr(i)` returns the string representing a character at that Unicode code point."
+      },
+      {
+        id: 41,
+        topic: "Caesar Cipher Workshop",
+        prompt: "Iterate character-by-character over the secret message string:",
+        code: `text = "freeCodeCamp"\nfor char ___ text:\n    print(char)`,
+        options: ["in", "of", "from", "through"],
+        accepted: ["in"],
+        hint: "The membership keyword used in Python for loops.",
+        rationale: "freeCodeCamp Caesar Cipher: `for item in iterable:` traverses sequences character by character."
+      },
+      {
+        id: 42,
+        topic: "Caesar Cipher Workshop",
+        prompt: "Check whether a character exists within the valid lowercase alphabet string:",
+        code: `alphabet = "abcdefghijklmnopqrstuvwxyz"\nif char ___ alphabet:\n    shift_cipher(char)`,
+        options: ["in", "within", "has", "contains"],
+        accepted: ["in"],
+        hint: "Python's membership test operator.",
+        rationale: "freeCodeCamp Caesar Cipher: The `in` operator tests for membership within a string or collection."
+      },
+      {
+        id: 43,
+        topic: "Caesar Cipher Workshop",
+        prompt: "Check if a punctuation character is NOT present inside the alphabet string:",
+        code: `if char ___ alphabet:\n    cipher_text += char`,
+        options: ["not in", "!in", "notin", "is not in"],
+        accepted: ["not in"],
+        hint: "Two separate words combining negation and membership.",
+        rationale: "freeCodeCamp Caesar Cipher: `not in` tests that a value does not appear in the sequence."
+      },
+      {
+        id: 44,
+        topic: "Loops with range()",
+        prompt: "Generate a sequence of index offsets from 0 up to, but not including, the length of the string:",
+        code: `message = "Python"\nfor i in ___(len(message)):\n    print(message[i])`,
+        options: ["range", "sequence", "indices", "xrange"],
+        accepted: ["range"],
+        hint: "Built-in function that yields arithmetic progressions of integers.",
+        rationale: "freeCodeCamp Loops: `range(stop)` generates numbers from 0 up to (not including) the stop argument."
+      },
+      {
+        id: 45,
+        topic: "Loops with range()",
+        prompt: "Step backward through alphabet indices from 25 down to 1 (stop at 0) with a negative step:",
+        code: `for i in range(25, 0, ___):\n    print(i)`,
+        options: ["-1", "1", "-0", "down"],
+        accepted: ["-1"],
+        hint: "The step argument in range(start, stop, step) must be negative to count backward.",
+        rationale: "freeCodeCamp Loops: A step of `-1` decrements the loop counter toward the stop bound."
+      },
+
+      // Section 8: Syntactic Precision & Fundamentals
+      {
+        id: 46,
+        topic: "Strings & Immutability",
+        prompt: "Why does `s = 'cat'; s[0] = 'b'` fail in Python? Because strings are:",
+        code: `# s[0] = 'b' triggers TypeError because strings are ___`,
+        options: ["immutable", "mutable", "constant", "static"],
+        accepted: ["immutable"],
+        hint: "Term meaning their internal content cannot be mutated in-place after creation.",
+        rationale: "freeCodeCamp Strings: In Python, strings are immutable; you cannot modify their individual characters in place."
+      },
+      {
+        id: 47,
+        topic: "Strings & Multiline",
+        prompt: "Declare a multiline string literal without explicit \\n escape characters using triple quotes:",
+        code: `banner = ___Documentation:\nLine 1\nLine 2___`,
+        options: ['"""', "'''", "```", "---"],
+        accepted: ['"""', "'''"],
+        hint: "Three double quotes or three single quotes.",
+        rationale: "freeCodeCamp Strings: Triple quotation marks (`\"\"\"` or `'''`) allow string literals to span multiple lines."
+      },
+      {
+        id: 48,
+        topic: "Expressions inside f-strings",
+        prompt: "In an f-string, embed an inline expression to calculate total cost ($4 * 5):",
+        code: `qty = 5\nreceipt = f"Total: {4 ___ qty}"`,
+        options: ["*", "x", "**", "+"],
+        accepted: ["*"],
+        hint: "Multiplication operator inside the f-string curly braces.",
+        rationale: "freeCodeCamp Strings: Expressions enclosed in curly braces inside f-strings are evaluated at runtime."
+      },
+      {
+        id: 49,
+        topic: "Conditionals & Logic",
+        prompt: "Complete the equality comparison checking if user input matches 'YES':",
+        code: `response = "YES"\nif response ___ "YES":\n    proceed()`,
+        options: ["==", "=", "equals", "is"],
+        accepted: ["=="],
+        hint: "Double equals operator checks equality of values, whereas single equals is assignment.",
+        rationale: "freeCodeCamp Conditionals: `==` compares whether two expressions have equal value."
+      },
+      {
+        id: 50,
+        topic: "Conditionals & Indentation",
+        prompt: "In Python, which character is REQUIRED at the very end of an `if`, `elif`, `else`, or `def` line?",
+        code: `if balance > 0___\n    allow_withdrawal()`,
+        options: [":", ";", "{", "->"],
+        accepted: [":"],
+        hint: "A single colon signals that an indented code block follows.",
+        rationale: "freeCodeCamp Python Basics: Colons `:` are required at the end of compound statement headers to introduce indented suites."
+      }
+    ];
+
+    // Session State
+    let activeQuestions = [...fccPythonBasicsQuestionBank];
+    let currentIndex = 0;
+    let score = 0;
+    let streak = 0;
+    let totalAttempts = 0;
+    let missedQuestions = [];
+    let isReviewMode = false;
+    let questionResults = {}; // tracks status: null, 'correct', 'missed'
+
+    // DOM Elements
+    const moduleTag = document.getElementById("module-tag");
+    const streakCounter = document.getElementById("streak-counter");
+    const scoreCounter = document.getElementById("score-counter");
+    const accuracyCounter = document.getElementById("accuracy-counter");
+    const progressBar = document.getElementById("progress-bar");
+    const reviewBanner = document.getElementById("review-banner");
+    const exitReviewBtn = document.getElementById("exit-review-btn");
+    const questionNavGrid = document.getElementById("question-nav-grid");
+
+    const quizContainer = document.getElementById("quiz-container");
+    const questionNumber = document.getElementById("question-number");
+    const questionTopic = document.getElementById("question-topic");
+    const promptText = document.getElementById("prompt-text");
+    const codeSnippet = document.getElementById("code-snippet");
+    const optionsGrid = document.getElementById("options-grid");
+    const hintBox = document.getElementById("hint-box");
+    const hintText = document.getElementById("hint-text");
+    const hintToggleBtn = document.getElementById("hint-toggle-btn");
+
+    const quizForm = document.getElementById("quiz-form");
+    const codeInput = document.getElementById("code-input");
+    const submitBtn = document.getElementById("submit-btn");
+
+    const feedbackBox = document.getElementById("feedback-box");
+    const feedbackStatus = document.getElementById("feedback-status");
+    const feedbackDetail = document.getElementById("feedback-detail");
+    const nextBtn = document.getElementById("next-btn");
+
+    const resultsScreen = document.getElementById("results-screen");
+    const finalScore = document.getElementById("final-score");
+    const finalTotal = document.getElementById("final-total");
+    const finalAccuracy = document.getElementById("final-accuracy");
+    const finalMissedCount = document.getElementById("final-missed-count");
+    const reviewMissedBtn = document.getElementById("review-missed-btn");
+    const missedPill = document.getElementById("missed-pill");
+    const retryAllBtn = document.getElementById("retry-all-btn");
+    const rankBadge = document.getElementById("rank-badge");
+
+    function renderNavGrid() {
+      questionNavGrid.innerHTML = "";
+      activeQuestions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        const status = questionResults[q.id];
+        let colorClass = "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700";
+        if (status === "correct") colorClass = "bg-emerald-950 text-emerald-300 border-emerald-500/50";
+        if (status === "missed") colorClass = "bg-rose-950 text-rose-300 border-rose-500/50";
+        if (idx === currentIndex) colorClass += " ring-2 ring-indigo-400 font-bold text-white";
+
+        btn.className = `w-7 h-7 rounded text-[11px] font-mono border transition-all flex items-center justify-center ${colorClass}`;
+        btn.textContent = idx + 1;
+        btn.title = `${q.topic} - Question ${idx + 1}`;
+        btn.onclick = () => {
+          currentIndex = idx;
+          renderQuestion(currentIndex);
+        };
+        questionNavGrid.appendChild(btn);
+      });
+    }
+
+    function renderQuestion(idx) {
+      const q = activeQuestions[idx];
+      questionTopic.textContent = q.topic;
+      questionNumber.textContent = `Question ${idx + 1} of ${activeQuestions.length}`;
+      promptText.textContent = q.prompt;
+      codeSnippet.textContent = q.code;
+
+      // Populate candidate multiple choice cards
+      optionsGrid.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+      q.options.forEach((opt, oIndex) => {
+        const optionCard = document.createElement("div");
+        optionCard.className = "flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-mono text-xs sm:text-sm";
+        optionCard.innerHTML = `
+          <span class="w-5 h-5 rounded bg-slate-800 text-slate-400 font-bold flex items-center justify-center text-[10px] sm:text-xs shrink-0">${letters[oIndex]}</span>
+          <span class="text-indigo-300 font-semibold truncate">${escapeHtml(opt)}</span>
+        `;
+        optionsGrid.appendChild(optionCard);
+      });
+
+      // Reset interaction elements
+      codeInput.value = "";
+      codeInput.disabled = false;
+      submitBtn.disabled = false;
+      feedbackBox.classList.add("hidden");
+      hintBox.classList.add("hidden");
+      hintToggleBtn.textContent = "Show Hint";
+      hintText.textContent = q.hint;
+
+      // Update progress bar
+      const progressPercent = (idx / activeQuestions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      renderNavGrid();
+      codeInput.focus();
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    hintToggleBtn.addEventListener("click", () => {
+      const isHidden = hintBox.classList.contains("hidden");
+      if (isHidden) {
+        hintBox.classList.remove("hidden");
+        hintToggleBtn.textContent = "Hide Hint";
+      } else {
+        hintBox.classList.add("hidden");
+        hintToggleBtn.textContent = "Show Hint";
+      }
+    });
+
+    quizForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rawAnswer = codeInput.value.trim();
+      if (!rawAnswer) return;
+
+      const q = activeQuestions[currentIndex];
+      totalAttempts++;
+
+      // Strict syntax validation against accepted tokens
+      const isCorrect = q.accepted.some(acc => acc.toLowerCase() === rawAnswer.toLowerCase());
+
+      codeInput.disabled = true;
+      submitBtn.disabled = true;
+      feedbackBox.classList.remove("hidden");
+
+      if (isCorrect) {
+        if (!questionResults[q.id]) score++;
+        streak++;
+        questionResults[q.id] = "correct";
+        feedbackBox.className = "p-4 rounded-lg text-sm border flex flex-col gap-2 bg-emerald-950/40 border-emerald-500/30 text-emerald-200";
+        feedbackStatus.innerHTML = `<span class="text-emerald-400 font-bold">✓ Correct!</span> <code class="bg-emerald-900/60 px-2 py-0.5 rounded text-emerald-300 font-mono">${escapeHtml(q.accepted[0])}</code>`;
+      } else {
+        streak = 0;
+        questionResults[q.id] = "missed";
+        feedbackBox.className = "p-4 rounded-lg text-sm border flex flex-col gap-2 bg-rose-950/40 border-rose-500/30 text-rose-200";
+        feedbackStatus.innerHTML = `<span class="text-rose-400 font-bold">✗ Incorrect.</span> Expected syntax: <code class="bg-rose-900/60 px-2 py-0.5 rounded text-rose-200 font-mono">${escapeHtml(q.accepted[0])}</code>`;
+
+        if (!missedQuestions.some(item => item.id === q.id)) {
+          missedQuestions.push(q);
+        }
+      }
+
+      feedbackDetail.textContent = q.rationale;
+
+      // Update counters
+      scoreCounter.textContent = `${score}/${activeQuestions.length}`;
+      streakCounter.textContent = streak;
+      const accuracy = totalAttempts > 0 ? Math.round((score / totalAttempts) * 100) : 100;
+      accuracyCounter.textContent = `${accuracy}%`;
+
+      renderNavGrid();
+      nextBtn.focus();
+    });
+
+    function advanceQuestion() {
+      currentIndex++;
+      if (currentIndex < activeQuestions.length) {
+        renderQuestion(currentIndex);
+      } else {
+        showResults();
+      }
+    }
+
+    nextBtn.addEventListener("click", advanceQuestion);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !feedbackBox.classList.contains("hidden")) {
+        advanceQuestion();
+      }
+    });
+
+    function showResults() {
+      progressBar.style.width = "100%";
+      quizContainer.classList.add("hidden");
+      resultsScreen.classList.remove("hidden");
+
+      finalTotal.textContent = activeQuestions.length;
+      finalScore.textContent = score;
+      const pct = Math.round((score / activeQuestions.length) * 100);
+      finalAccuracy.textContent = `${pct}%`;
+      finalMissedCount.textContent = missedQuestions.length;
+
+      if (pct === 100) {
+        rankBadge.textContent = "Flawless Mastery (100% freeCodeCamp Basics)";
+        rankBadge.className = "text-xs font-semibold uppercase tracking-wider text-emerald-400 mt-1";
+      } else if (pct >= 80) {
+        rankBadge.textContent = "FCC Python Basics Certified (Pass)";
+        rankBadge.className = "text-xs font-semibold uppercase tracking-wider text-indigo-400 mt-1";
+      } else {
+        rankBadge.textContent = "Reinforcement Recommended";
+        rankBadge.className = "text-xs font-semibold uppercase tracking-wider text-amber-400 mt-1";
+      }
+
+      if (missedQuestions.length > 0) {
+        reviewMissedBtn.classList.remove("hidden");
+        missedPill.textContent = missedQuestions.length;
+      } else {
+        reviewMissedBtn.classList.add("hidden");
+      }
+    }
+
+    // Practice Missed Repetition Mode
+    reviewMissedBtn.addEventListener("click", () => {
+      activeQuestions = [...missedQuestions];
+      missedQuestions = [];
+      isReviewMode = true;
+      moduleTag.textContent = "Mode: Missed Question Review";
+      reviewBanner.classList.remove("hidden");
+      resetSessionState();
+    });
+
+    // Exit Review Mode back to 50
+    exitReviewBtn.addEventListener("click", () => {
+      startFullSession();
+    });
+
+    // Retry All 50
+    retryAllBtn.addEventListener("click", () => {
+      startFullSession();
+    });
+
+    function startFullSession() {
+      // Shuffled run of all 50 questions
+      activeQuestions = [...fccPythonBasicsQuestionBank].sort(() => Math.random() - 0.5);
+      missedQuestions = [];
+      questionResults = {};
+      isReviewMode = false;
+      moduleTag.textContent = "Module: Python Basics (v9)";
+      reviewBanner.classList.add("hidden");
+      resetSessionState();
+    }
+
+    function resetSessionState() {
+      currentIndex = 0;
+      score = 0;
+      streak = 0;
+      totalAttempts = 0;
+      scoreCounter.textContent = `0/${activeQuestions.length}`;
+      streakCounter.textContent = "0";
+      accuracyCounter.textContent = "100%";
+      resultsScreen.classList.add("hidden");
+      quizContainer.classList.remove("hidden");
+      renderQuestion(0);
+    }
+
+    // Initialize session
+    startFullSession();
+  </script>
+</body>
+</html>
